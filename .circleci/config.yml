@@ -1,0 +1,49 @@
+version: 2
+jobs:
+  build:
+    parallelism: 2
+    environment:
+      _JAVA_OPTIONS: "-Xmx3g"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    docker:
+      - image: cimg/openjdk:17.0.1
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: v1-gradle-cache-{{ checksum "contenthash/build.gradle" }}
+      - run:
+          name: Run tests
+          command: |
+            ./gradlew contenthash:test
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+          key: v1-gradle-cache-{{ checksum "contenthash/build.gradle" }}
+      - store_test_results:
+          path: contenthash/build/test-results/test
+      - store_artifacts:
+          path: contenthash/build/test-results/test
+      - run:
+          name: Assemble JAR
+          command: |
+            # Skip this for other nodes
+            if [ "$CIRCLE_NODE_INDEX" == 0 ]; then
+              ./gradlew contenthash:assemble
+            fi
+      - store_artifacts:
+          path: contenthash/build/libs
+#      - run:
+#          name: deploy
+#          command: ./gradlew publish --no-daemon --no-parallel
+
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - build

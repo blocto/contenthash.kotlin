@@ -1,0 +1,28 @@
+plugins {
+    id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
+    id "com.vanniktech.maven.publish" version "0.19.0"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = '11'
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+    }
+}
+
+dependencies {
+    implementation 'com.github.komputing.khex:extensions:1.1.2'
+    implementation 'com.github.AliabbasMerchant:java-multicodec:5e44c90aea'
+    implementation 'com.github.multiformats:java-multihash:v1.3.0'
+    implementation 'com.github.ipld:java-cid:v1.3.1'
+    implementation 'io.matthewnelson.kotlin-components:encoding-base32:1.1.2'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+apply from: 'maven-push.gradle'
